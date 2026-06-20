@@ -1,0 +1,8 @@
+﻿*.keras
+*.h5
+models/
+.env
+media/
+__pycache__/
+staticfiles/
+.DS_Store
