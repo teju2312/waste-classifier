@@ -1,0 +1,427 @@
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History — WasteIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f8faf9;
+  --surface: #ffffff;
+  --border: rgba(15,23,42,0.08);
+  --border-hover: rgba(15,23,42,0.16);
+  --text: #0f172a;
+  --muted: #64748b;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.bg-canvas { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: drift linear infinite;
+}
+
+.orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,58,237,0.15), transparent 70%);
+  top: -200px; left: -150px;
+  animation-duration: 22s;
+  opacity: 0.6;
+}
+
+.orb-2 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(8,145,178,0.12), transparent 70%);
+  bottom: -100px; right: -100px;
+  animation-duration: 18s;
+  animation-direction: reverse;
+  opacity: 0.5;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -30px); }
+}
+
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(15,23,42,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(248,250,249,0.75);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 20px; font-weight: 700;
+  text-decoration: none; color: var(--text);
+}
+
+.logo-mark {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed, #0891b2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.25);
+}
+
+.nav-right { display: flex; gap: 6px; }
+.nav-btn {
+  padding: 8px 18px; border-radius: 10px;
+  font-size: 14px; font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  text-decoration: none; color: var(--muted);
+  border: none; background: transparent; cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-btn:hover { color: var(--text); background: rgba(15,23,42,0.04); }
+.nav-btn.active { color: #7c3aed; background: rgba(124,58,237,0.08); }
+
+main {
+  position: relative; z-index: 1;
+  max-width: 960px; margin: 0 auto;
+  padding: 5.5rem 1.5rem 4rem;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-head {
+  margin-bottom: 2rem;
+  animation: rise 0.5s ease both;
+}
+
+.page-head h1 {
+  font-size: 2rem; font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.page-head p { color: var(--muted); font-size: 15px; font-weight: 300; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+  animation: rise 0.5s 0.05s ease both;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  transition: all 0.3s;
+  box-shadow: 0 2px 12px rgba(15,23,42,0.03);
+}
+
+.stat:hover { border-color: var(--border-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(15,23,42,0.06); }
+
+.stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.stat-num {
+  font-size: 2rem; font-weight: 700; line-height: 1;
+}
+
+.stat-num.all  { color: var(--text); }
+.stat-num.org  { color: #059669; }
+.stat-num.rec  { color: #0891b2; }
+
+.filters {
+  display: flex; gap: 8px;
+  margin-bottom: 1.5rem;
+  animation: rise 0.5s 0.1s ease both;
+}
+
+.f-btn {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px; font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.f-btn:hover { color: var(--text); border-color: var(--border-hover); }
+
+.f-btn.active-all {
+  background: rgba(124,58,237,0.08);
+  border-color: rgba(124,58,237,0.3);
+  color: #7c3aed;
+}
+
+.f-btn.active-org {
+  background: rgba(5,150,105,0.08);
+  border-color: rgba(5,150,105,0.3);
+  color: #059669;
+}
+
+.f-btn.active-rec {
+  background: rgba(8,145,178,0.08);
+  border-color: rgba(8,145,178,0.3);
+  color: #0891b2;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  animation: rise 0.5s 0.15s ease both;
+}
+
+.log-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s;
+  box-shadow: 0 2px 12px rgba(15,23,42,0.03);
+}
+
+.log-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(15,23,42,0.1);
+}
+
+.log-card.is-org:hover { border-color: rgba(5,150,105,0.3); }
+.log-card.is-rec:hover { border-color: rgba(8,145,178,0.3); }
+
+.thumb-wrap {
+  position: relative;
+  height: 170px;
+  overflow: hidden;
+}
+
+.thumb {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.log-card:hover .thumb { transform: scale(1.06); }
+
+.thumb-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 55%, rgba(15,23,42,0.35) 100%);
+}
+
+.thumb-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(10px);
+}
+
+.badge-org {
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(5,150,105,0.3);
+  color: #047857;
+}
+
+.badge-rec {
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(8,145,178,0.3);
+  color: #0e7490;
+}
+
+.log-body { padding: 1rem; }
+
+.log-title {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.log-title.org { color: #047857; }
+.log-title.rec { color: #0e7490; }
+
+.log-date { font-size: 12px; color: var(--muted); font-weight: 300; }
+
+.empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  animation: rise 0.5s ease both;
+}
+
+.empty-icon { font-size: 56px; margin-bottom: 1.25rem; display: block; }
+
+.empty h3 {
+  font-size: 1.3rem; font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.empty p { color: var(--muted); font-size: 15px; margin-bottom: 1.75rem; font-weight: 300; }
+
+.cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 28px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #0891b2);
+  color: white;
+  font-size: 15px; font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 4px 24px rgba(124,58,237,0.25);
+}
+
+.cta:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+@media (max-width: 600px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 380px) {
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+<div class="bg-grid"></div>
+
+<nav>
+  <a href="{% url 'home' %}" class="logo">
+    <div class="logo-mark">♻️</div>
+    WasteIQ
+  </a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-btn">Classify</a>
+    <a href="{% url 'history' %}" class="nav-btn active">History</a>
+  </div>
+</nav>
+
+<main>
+
+  <div class="page-head">
+    <h1>Classification history</h1>
+    <p>All images classified so far, live from the database.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Total</div>
+      <div class="stat-num all">{{ total_predictions }}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Organic</div>
+      <div class="stat-num org">{{ organic_count }}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Recyclable</div>
+      <div class="stat-num rec">{{ recyclable_count }}</div>
+    </div>
+  </div>
+
+  {% if logs %}
+
+  <div class="filters">
+    <button class="f-btn active-all" id="f-all"  onclick="applyFilter('all')">All</button>
+    <button class="f-btn" id="f-org" onclick="applyFilter('org')">🌿 Organic</button>
+    <button class="f-btn" id="f-rec" onclick="applyFilter('rec')">♻️ Recyclable</button>
+  </div>
+
+  <div class="grid" id="log-grid">
+    {% for log in logs %}
+    <div class="log-card {% if log.is_organic %}is-org{% else %}is-rec{% endif %}"
+         data-type="{% if log.is_organic %}org{% else %}rec{% endif %}">
+      <div class="thumb-wrap">
+        <img src="{{ log.image.url }}" alt="waste" class="thumb" loading="lazy">
+        <div class="thumb-overlay"></div>
+        <div class="thumb-badge {% if log.is_organic %}badge-org{% else %}badge-rec{% endif %}">
+          {% if log.is_organic %}🌿 Organic{% else %}♻️ Recyclable{% endif %}
+        </div>
+      </div>
+      <div class="log-body">
+        <div class="log-title {% if log.is_organic %}org{% else %}rec{% endif %}">
+          {% if log.is_organic %}Organic Waste{% else %}Recyclable Waste{% endif %}
+        </div>
+        <div class="log-date">{{ log.created_at|date:"d M Y · H:i" }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+
+  <div class="empty">
+    <span class="empty-icon">🗑️</span>
+    <h3>No predictions yet</h3>
+    <p>Start classifying waste images to see your history here.</p>
+    <a href="{% url 'home' %}" class="cta">📸 Classify an image</a>
+  </div>
+
+  {% endif %}
+
+</main>
+
+<script>
+  function applyFilter(type) {
+    const all = document.getElementById('f-all');
+    const org = document.getElementById('f-org');
+    const rec = document.getElementById('f-rec');
+
+    all.className = 'f-btn';
+    org.className = 'f-btn';
+    rec.className = 'f-btn';
+
+    if (type === 'all') all.className = 'f-btn active-all';
+    if (type === 'org') org.className = 'f-btn active-org';
+    if (type === 'rec') rec.className = 'f-btn active-rec';
+
+    document.querySelectorAll('.log-card').forEach(card => {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html> {% endcomment %}

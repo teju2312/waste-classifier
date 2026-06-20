@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Result — WasteIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f8faf9;
+  --surface: #ffffff;
+  --border: rgba(15,23,42,0.08);
+  --text: #0f172a;
+  --muted: #64748b;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  animation: drift linear infinite;
+}
+
+{% if result.is_organic %}
+.orb-1 {
+  width: 650px; height: 650px;
+  background: radial-gradient(circle, rgba(5,150,105,0.2), transparent 70%);
+  top: -200px; left: -200px;
+  animation-duration: 20s;
+  opacity: 0.6;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(34,197,94,0.13), transparent 70%);
+  bottom: -100px; right: -100px;
+  animation-duration: 15s;
+  animation-direction: reverse;
+  opacity: 0.5;
+}
+{% else %}
+.orb-1 {
+  width: 650px; height: 650px;
+  background: radial-gradient(circle, rgba(8,145,178,0.2), transparent 70%);
+  top: -200px; right: -200px;
+  animation-duration: 20s;
+  opacity: 0.6;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(56,189,248,0.13), transparent 70%);
+  bottom: -100px; left: -100px;
+  animation-duration: 15s;
+  animation-direction: reverse;
+  opacity: 0.5;
+}
+{% endif %}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -30px); }
+}
+
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(15,23,42,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(248,250,249,0.75);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 20px; font-weight: 700;
+  text-decoration: none; color: var(--text);
+}
+
+.logo-mark {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed, #0891b2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.25);
+}
+
+.nav-right { display: flex; gap: 6px; }
+.nav-btn {
+  padding: 8px 18px; border-radius: 10px;
+  font-size: 14px; font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  text-decoration: none; color: var(--muted);
+  border: none; background: transparent; cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-btn:hover { color: var(--text); background: rgba(15,23,42,0.04); }
+
+/* Main */
+main {
+  position: relative; z-index: 1;
+  max-width: 620px; margin: 0 auto;
+  padding: 5.5rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Result card */
+.card {
+  width: 100%;
+  background: var(--surface);
+  {% if result.is_organic %}
+  border: 1px solid rgba(5,150,105,0.2);
+  {% else %}
+  border: 1px solid rgba(8,145,178,0.2);
+  {% endif %}
+  border-radius: 24px;
+  overflow: hidden;
+  animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  {% if result.is_organic %}
+  box-shadow: 0 8px 40px rgba(5,150,105,0.1), 0 24px 48px rgba(15,23,42,0.06);
+  {% else %}
+  box-shadow: 0 8px 40px rgba(8,145,178,0.1), 0 24px 48px rgba(15,23,42,0.06);
+  {% endif %}
+}
+
+/* Image */
+.card-img {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+
+.card-img img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 6s ease;
+}
+
+.card-img:hover img { transform: scale(1.04); }
+
+.img-overlay {
+  position: absolute; inset: 0;
+  {% if result.is_organic %}
+  background: linear-gradient(to bottom, transparent 40%, rgba(255,255,255,0.85) 100%),
+              linear-gradient(135deg, rgba(5,150,105,0.06) 0%, transparent 60%);
+  {% else %}
+  background: linear-gradient(to bottom, transparent 40%, rgba(255,255,255,0.85) 100%),
+              linear-gradient(135deg, rgba(8,145,178,0.06) 0%, transparent 60%);
+  {% endif %}
+}
+
+.img-chip {
+  position: absolute;
+  top: 14px; right: 14px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  {% if result.is_organic %}
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(5,150,105,0.3);
+  color: #047857;
+  {% else %}
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(8,145,178,0.3);
+  color: #0e7490;
+  {% endif %}
+}
+
+/* Card body */
+.card-body {
+  padding: 1.75rem 2rem 2rem;
+  text-align: center;
+}
+.result-emoji {
+  font-size: 52px;
+  display: block;
+  margin-bottom: 0.75rem;
+  animation: rise 0.5s 0.1s both;
+}
+
+.result-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 0.6rem;
+  animation: rise 0.5s 0.15s both;
+  {% if result.is_organic %}
+  color: #047857;
+  {% else %}
+  color: #0e7490;
+  {% endif %}
+}
+
+.result-desc {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+  margin-bottom: 1.75rem;
+  font-weight: 300;
+  animation: rise 0.5s 0.2s both;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+  animation: rise 0.5s 0.25s both;
+}
+
+.meta-chip {
+  padding: 7px 14px;
+  border-radius: 10px;
+  background: rgba(15,23,42,0.03);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.meta-chip strong { color: var(--text); font-weight: 500; }
+
+.actions {
+  display: flex;
+  justify-content: center;
+  animation: rise 0.5s 0.3s both;
+}
+
+.btn-main {
+  padding: 14px 36px;
+  border: none;
+  border-radius: 12px;
+  {% if result.is_organic %}
+  background: linear-gradient(135deg, #059669, #10b981);
+  box-shadow: 0 4px 20px rgba(5,150,105,0.25);
+  {% else %}
+  background: linear-gradient(135deg, #0891b2, #06b6d4);
+  box-shadow: 0 4px 20px rgba(8,145,178,0.25);
+  {% endif %}
+  color: white;
+  font-size: 15px; font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  text-decoration: none;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-main:hover { transform: translateY(-2px); filter: brightness(1.08); }
+
+.btn-ghost {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15,23,42,0.03);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 15px; font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  text-decoration: none;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  background: rgba(15,23,42,0.06);
+  color: var(--text);
+  border-color: rgba(15,23,42,0.16);
+}
+
+@media (max-width: 480px) {
+  .card-img { height: 220px; }
+  .card-body { padding: 1.25rem 1.25rem 1.5rem; }
+  .result-title { font-size: 1.6rem; }
+  .actions { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+<div class="bg-grid"></div>
+
+<nav>
+  <a href="{% url 'home' %}" class="logo">
+    <div class="logo-mark">♻️</div>
+    WasteIQ
+  </a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-btn">Classify</a>
+    {% comment %} <a href="{% url 'history' %}" class="nav-btn">History</a> {% endcomment %}
+  </div>
+</nav>
+
+<main>
+  <div class="card">
+    <div class="card-img">
+     <img src="{{ preview_image }}" alt="Uploaded Waste Image" class="img-fluid rounded">
+      <div class="img-overlay"></div>
+      <div class="img-chip">
+        {% if result.is_organic %}🌿 Organic{% else %}♻️ Recyclable{% endif %}
+      </div>
+    </div>
+
+    <div class="card-body">
+      <span class="result-emoji">{% if result.is_organic %}🌿{% else %}♻️{% endif %}</span>
+
+      <div class="result-title">
+        {% if result.is_organic %}Organic Waste{% else %}Recyclable Waste{% endif %}
+      </div>
+
+      {% comment %} <div class="result-desc">
+        {% if result.is_organic %}
+          This item is biodegradable. Dispose it in the green or wet waste bin for composting.
+        {% else %}
+          This item can be recycled. Rinse it clean and place in the blue or dry waste bin.
+        {% endif %}
+      </div> {% endcomment %}
+
+      <div class="meta-row">
+        <div class="meta-chip">🕐 <strong>{{ log.created_at|date:"d M Y, H:i" }}</strong></div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'home' %}" class="btn-main">📸 Classify another</a>
+        {% comment %} <a href="{% url 'history' %}" class="btn-ghost">📋 View history</a> {% endcomment %}
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
