@@ -22,7 +22,7 @@ def get_secret(secret_id, default=None):
     Fetches a secret value from Google Secret Manager if USE_SECRET_MANAGER
     is enabled (set this env var to 'True' only in Cloud Run). Otherwise,
     falls back to reading from .env via os.getenv, so local development is
-    unaffected.
+    affected.
     """
     if not USE_SECRET_MANAGER:
         return os.getenv(secret_id.upper().replace('-', '_'), default)
@@ -38,15 +38,28 @@ def get_secret(secret_id, default=None):
     return response.payload.data.decode('UTF-8')
 
 
-# ── Security ──────────────────────────────────────────────────────────────────
-SECRET_KEY = get_secret('django-secret-key', os.getenv('DJANGO_SECRET_KEY'))
+# ── Security (UPDATED PRODUCTION FIXES) ───────────────────────────────────────
+SECRET_KEY = get_secret('django-secret-key', os.getenv('DJANGO_SECRET_KEY', 'django-insecure-production-fallback-key-99709'))
+
 DEBUG      = os.getenv('DJANGO_DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',')
+
+# Read from env if present; otherwise automatically include your Cloud Run live domain
+raw_hosts = os.getenv('DJANGO_ALLOWED_HOSTS')
+if raw_hosts:
+    ALLOWED_HOSTS = raw_hosts.split(',')
+else:
+    ALLOWED_HOSTS = [
+        'localhost', 
+        '127.0.0.1', 
+        'waste-classifier-service-950820900256.asia-south1.run.app'
+    ]
+
 CSRF_TRUSTED_ORIGINS = [
     'https://' + host for host in ALLOWED_HOSTS if host not in ('localhost', '127.0.0.1')
 ]
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
+
 # ── Installed Apps ────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -88,7 +101,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'waste_classification.wsgi.application'
 
-# ── Database — MySQL ──────────────────────────────────────────────────────────
+# ── Database — PostgreSQL ─────────────────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE':   'django.db.backends.postgresql',
@@ -124,7 +137,7 @@ if USE_GCS:
     GS_PROJECT_ID = GCP_PROJECT_ID
     GS_DEFAULT_ACL = None  # bucket already has uniform access control + public access prevention
     GS_FILE_OVERWRITE = False
-# CRITICAL FIX: Disable querystring auth to prevent private key signing error
+    # CRITICAL FIX: Disable querystring auth to prevent private key signing error
     GS_QUERYSTRING_AUTH = True
     STORAGES = {
         "default": {
