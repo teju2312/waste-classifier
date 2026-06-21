@@ -137,8 +137,10 @@ if USE_GCS:
     GS_PROJECT_ID = GCP_PROJECT_ID
     GS_DEFAULT_ACL = None  # bucket already has uniform access control + public access prevention
     GS_FILE_OVERWRITE = False
+    
     # CRITICAL FIX: Disable querystring auth to prevent private key signing error
-    GS_QUERYSTRING_AUTH = True
+    GS_QUERYSTRING_AUTH = False
+    
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
@@ -176,6 +178,7 @@ if os.getenv('USE_GCS', 'False') == 'True' and not MODEL_PATH.exists():
         print("Model file downloaded from GCS successfully!")
     except Exception as e:
         print(f"Warning: Failed to auto-download model from GCS bucket: {e}")
+
 # ── Internationalisation ──────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Kolkata'
@@ -183,3 +186,32 @@ USE_I18N      = True
 USE_TZ        = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ── Logging Configuration (PRODUCTION CRASH LOGGING EXPLICIT) ──────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'ERROR',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
