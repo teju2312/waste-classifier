@@ -17,5 +17,5 @@ RUN mkdir -p media staticfiles logs
 
 EXPOSE 8000
 
-# Updated CMD line to disable multi-worker thread buffering and catch the trace raw
-CMD python manage.py migrate --noinput && gunicorn waste_classification.wsgi:application --bind 0.0.0.0:8080 --workers 1 --threads 1 --log-level debug
+# Updated CMD line to start the web server instantly on boot
+CMD ["gunicorn", "waste_classification.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "8", "--timeout", "120"]
