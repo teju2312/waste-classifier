@@ -15,10 +15,9 @@ COPY . .
 
 RUN mkdir -p media staticfiles logs
 
-EXPOSE 8000
+# Collect Django static files
+RUN python manage.py collectstatic --noinput
 
-# Updated CMD line to start the web server instantly on boot
-CMD ["gunicorn", "waste_classification.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "8", "--timeout", "120"]
+EXPOSE 8080
 
-# Run migrations securely before starting the web server thread
 CMD sh -c "python manage.py migrate --noinput && gunicorn waste_classification.wsgi:application --bind 0.0.0.0:8080 --workers 1 --threads 8 --timeout 120"
