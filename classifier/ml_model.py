@@ -127,14 +127,13 @@ class WasteClassifier:
             models_dir = _ensure_models_available_locally()
 
             # CRITICAL ENVIRONMENT FIX: Map Keras home cache directory to /tmp
-            # This forces TensorFlow to store downloaded network weights files in the writable portion 
+            # This forces TensorFlow to store downloaded network weights files in the writable portion
             # of the Cloud Run filesystem if it falls back to internet fetching.
             os.environ['XDG_CACHE_HOME'] = '/tmp'
             os.environ['KERAS_HOME'] = '/tmp/.keras'
 
             if WasteClassifier._imagenet_model is None:
                 logger.info("Loading ImageNet MobileNetV2 (Layer 1 gate)...")
-                # Loading weights cleanly inside the container sandbox env
                 WasteClassifier._imagenet_model = tf.keras.applications.MobileNetV2(weights='imagenet')
 
             if WasteClassifier._autoencoder is None:
@@ -206,9 +205,12 @@ class WasteClassifier:
     def predict(self, image):
         """
         Runs the image through all four layers and returns a result dict.
+        Logs the reason for rejection at each layer to help diagnose
+        false-rejection issues in production.
         """
         passed, std_value = self._check_blank(image)
         if not passed:
+            logger.info(f"REJECTED at Layer 0 (blank check): std={std_value:.2f}, threshold={self.BLANK_STD_THRESHOLD}")
             return {
                 'label': 'Not a valid image',
                 'is_organic': False,
@@ -219,6 +221,7 @@ class WasteClassifier:
 
         passed, matched = self._check_imagenet_gate(image)
         if not passed:
+            logger.info("REJECTED at Layer 1 (ImageNet gate): no whitelist match found")
             return {
                 'label': 'Not a valid image',
                 'is_organic': False,
@@ -226,9 +229,12 @@ class WasteClassifier:
                 'is_rejected': True,
                 'raw_score': 0.0,
             }
+        else:
+            logger.info(f"PASSED Layer 1 (ImageNet gate): matched={matched}")
 
         passed, mse = self._check_autoencoder_gate(image)
         if not passed:
+            logger.info(f"REJECTED at Layer 2 (autoencoder gate): mse={mse:.4f}, threshold={self.AUTOENCODER_MSE_THRESHOLD}")
             return {
                 'label': 'Not a valid image',
                 'is_organic': False,
@@ -236,9 +242,12 @@ class WasteClassifier:
                 'is_rejected': True,
                 'raw_score': round(mse, 4),
             }
+        else:
+            logger.info(f"PASSED Layer 2 (autoencoder gate): mse={mse:.4f}")
 
         label, confidence = self._classify_final(image)
         label_display = label.capitalize()
+        logger.info(f"FINAL PREDICTION: {label_display}, confidence={confidence:.4f}")
 
         return {
             'label': label_display,
