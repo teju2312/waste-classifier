@@ -152,10 +152,30 @@ if USE_GCS:
     GS_LOCATION = 'uploads'
 
 
-# ── ML Model Config ───────────────────────────────────────────────────────────
-MODEL_PATH         = BASE_DIR / os.getenv('MODEL_PATH', 'models/waste_classifier_final.keras')
+# ── ML Model Config (SELF-HEALING CLOUD DEPLOYMENT) ───────────────────────────
+MODEL_DIR = BASE_DIR / 'models'
+MODEL_DIR.mkdir(exist_ok=True)  # Ensure the directory exists inside the container
+MODEL_PATH = MODEL_DIR / 'waste_classifier_final.keras'
+
 MAX_UPLOAD_SIZE_MB = int(os.getenv('MAX_UPLOAD_SIZE_MB', 10))
 
+# If running in production (USE_GCS is True) and the model file isn't present, stream it from GCS
+if os.getenv('USE_GCS', 'False') == 'True' and not MODEL_PATH.exists():
+    try:
+        print("Production environment: Downloading model file from GCS bucket...")
+        from google.cloud import storage
+        
+        # Pull bucket configuration definitions cleanly
+        bucket_name = os.getenv('GCS_BUCKET_NAME', 'waste-classifier-bucket')
+        storage_client = storage.Client(project=GCP_PROJECT_ID)
+        bucket = storage_client.bucket(bucket_name)
+        
+        # Point to the model file name inside your bucket root context
+        blob = bucket.blob('waste_classifier_final.keras')
+        blob.download_to_filename(str(MODEL_PATH))
+        print("Model file downloaded from GCS successfully!")
+    except Exception as e:
+        print(f"Warning: Failed to auto-download model from GCS bucket: {e}")
 # ── Internationalisation ──────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Kolkata'
