@@ -5,6 +5,7 @@ from .models import PredictionLog, ModelInfo
 
 @admin.register(PredictionLog)
 class PredictionLogAdmin(admin.ModelAdmin):
+
     list_display = (
         'label',
         'image_preview',
@@ -55,11 +56,8 @@ class PredictionLogAdmin(admin.ModelAdmin):
     def image_preview(self, obj):
         if obj and obj.image:
             return format_html(
-                '<a href="{0}" target="_blank">'
-                '<img src="{0}" width="100" height="100" '
-                'style="object-fit:cover;border-radius:8px;border:1px solid #ddd;" />'
-                '</a>',
-                obj.secure_image_url
+                '<a href="{}" target="_blank">View Image</a>',
+                obj.image.url
             )
         return "-"
 
@@ -68,6 +66,7 @@ class PredictionLogAdmin(admin.ModelAdmin):
 
 @admin.register(ModelInfo)
 class ModelInfoAdmin(admin.ModelAdmin):
+
     list_display = (
         'version',
         'accuracy',
