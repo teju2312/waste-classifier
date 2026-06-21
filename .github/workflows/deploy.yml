@@ -1,4 +1,42 @@
+name: Continuous Deployment to Cloud Run
 
-# Trigger Pipeline Build Update
+on:
+  push:
+    branches:
+      - main
 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
 
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker Authentication
+        run: |
+          gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
+
+      - name: Build and Push Container Image
+        run: |
+          IMAGE_URI="asia-south1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/waste-classifier-repo/waste-classifier:${{ github.sha }}"
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+
+      - name: Deploy to Google Cloud Run
+        run: |
+          IMAGE_URI="asia-south1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/waste-classifier-repo/waste-classifier:${{ github.sha }}"
+          gcloud run deploy waste-classifier-service \
+            --image=$IMAGE_URI \
+            --region=${{ secrets.GCP_REGION }} \
+            --platform=managed \
+            --set-env-vars="USE_GCS=True,GCS_BUCKET_NAME=waste-classifier-bucket,GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
+            --service-account="waste-classifier-deployer@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+            --quiet
