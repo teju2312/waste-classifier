@@ -101,17 +101,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'waste_classification.wsgi.application'
 
-# ── Database — PostgreSQL ─────────────────────────────────────────────────────
+# ── Database — PostgreSQL (AUTO-ROUTING CLOUD INSTANCE) ────────────────────────
 DATABASES = {
     'default': {
         'ENGINE':   'django.db.backends.postgresql',
         'NAME':     get_secret('db-name', os.getenv('DB_NAME')),
         'USER':     get_secret('db-user', os.getenv('DB_USER')),
         'PASSWORD': get_secret('db-password', os.getenv('DB_PASSWORD')),
-        'HOST':     get_secret('db-host', os.getenv('DB_HOST', 'localhost')),
         'PORT':     get_secret('db-port', os.getenv('DB_PORT', '5432')),
     }
 }
+
+# If running in production with Secret Manager, mount the Cloud SQL proxy socket route
+if USE_SECRET_MANAGER:
+    # This matches the secure socket connector pathway provided by Cloud Run
+    DATABASES['default']['HOST'] = f'/cloudsql/{os.getenv("CLOUD_SQL_CONNECTION_NAME", "noted-casing-499709-d9:asia-south1:waste-classifier-db")}'
+else:
+    DATABASES['default']['HOST'] = get_secret('db-host', os.getenv('DB_HOST', 'localhost'))
 
 # ── Password Validation ───────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
