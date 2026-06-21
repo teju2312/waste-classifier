@@ -101,7 +101,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'waste_classification.wsgi.application'
 
-# ── Database — PostgreSQL (AUTO-ROUTING CLOUD INSTANCE) ────────────────────────
+# ── Database — PostgreSQL (BULLETPROOF CLOUD RUN SOCKET ROUTE) ────────────────
 DATABASES = {
     'default': {
         'ENGINE':   'django.db.backends.postgresql',
@@ -112,13 +112,14 @@ DATABASES = {
     }
 }
 
-# If running in production with Secret Manager, mount the Cloud SQL proxy socket route
-if USE_SECRET_MANAGER:
-    # This matches the secure socket connector pathway provided by Cloud Run
-    DATABASES['default']['HOST'] = f'/cloudsql/{os.getenv("CLOUD_SQL_CONNECTION_NAME", "noted-casing-499709-d9:asia-south1:waste-classifier-db")}'
+# Explicitly detect if we are running in the Google Cloud Run live container
+if os.getenv('K_SERVICE') or USE_SECRET_MANAGER:
+    # Use the static instance descriptor path that matches your infrastructure configuration
+    connection_name = os.getenv('CLOUD_SQL_CONNECTION_NAME', 'noted-casing-499709-d9:asia-south1:waste-classifier-db')
+    DATABASES['default']['HOST'] = f'/cloudsql/{connection_name}'
 else:
+    # Local fallback option
     DATABASES['default']['HOST'] = get_secret('db-host', os.getenv('DB_HOST', 'localhost'))
-
 # ── Password Validation ───────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
