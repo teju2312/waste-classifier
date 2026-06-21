@@ -40,3 +40,5 @@ jobs:
             --set-env-vars="USE_GCS=True,GCS_BUCKET_NAME=waste-classifier-bucket,GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
             --service-account="waste-classifier-deployer@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
             --quiet
+
+
