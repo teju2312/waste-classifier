@@ -163,7 +163,8 @@ if USE_GCS:
 # ── ML Model Config (SELF-HEALING CLOUD DEPLOYMENT) ───────────────────────────
 MODEL_DIR = BASE_DIR / 'models'
 MODEL_DIR.mkdir(exist_ok=True)  # Ensure the directory exists inside the container
-MODEL_PATH = MODEL_DIR / 'waste_classifier_final.keras'
+# CHANGED HERE: Match the exact bucket filename
+MODEL_PATH = MODEL_DIR / 'waste_classifier.keras'
 
 MAX_UPLOAD_SIZE_MB = int(os.getenv('MAX_UPLOAD_SIZE_MB', 10))
 
@@ -178,13 +179,12 @@ if os.getenv('USE_GCS', 'False') == 'True' and not MODEL_PATH.exists():
         storage_client = storage.Client(project=GCP_PROJECT_ID)
         bucket = storage_client.bucket(bucket_name)
         
-        # Point to the model file name inside your bucket root context
-        blob = bucket.blob('waste_classifier_final.keras')
+        # CHANGED HERE: Match the exact bucket filename
+        blob = bucket.blob('waste_classifier.keras')
         blob.download_to_filename(str(MODEL_PATH))
         print("Model file downloaded from GCS successfully!")
     except Exception as e:
         print(f"Warning: Failed to auto-download model from GCS bucket: {e}")
-
 # ── Internationalisation ──────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Kolkata'
