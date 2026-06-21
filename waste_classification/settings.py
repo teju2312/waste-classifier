@@ -120,6 +120,7 @@ if os.getenv('K_SERVICE') or USE_SECRET_MANAGER:
 else:
     # Local fallback option
     DATABASES['default']['HOST'] = get_secret('db-host', os.getenv('DB_HOST', 'localhost'))
+
 # ── Password Validation ───────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
